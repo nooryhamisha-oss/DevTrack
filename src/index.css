@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --c-bg: #0b0e14;
+  --c-panel: #12151f;
+  --c-panel2: #171b27;
+  --c-border: #232838;
+  --c-ink: #edeff5;
+  --c-ink-soft: #8b92a5;
+  --c-ink-faint: #5a6178;
+  --c-violet-soft: rgba(139, 92, 246, 0.15);
+  --c-grow-soft: rgba(61, 220, 151, 0.12);
+  --c-flag-soft: rgba(240, 183, 92, 0.12);
+}
+
+html.light {
+  --c-bg: #f4f5f9;
+  --c-panel: #ffffff;
+  --c-panel2: #ffffff;
+  --c-border: #e1e4ec;
+  --c-ink: #1b1f2a;
+  --c-ink-soft: #5a6178;
+  --c-ink-faint: #8b92a5;
+  --c-violet-soft: rgba(139, 92, 246, 0.1);
+  --c-grow-soft: rgba(61, 220, 151, 0.1);
+  --c-flag-soft: rgba(240, 183, 92, 0.14);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  ::selection {
+    background-color: rgba(139, 92, 246, 0.3);
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-panel2 border border-border rounded-card;
+  }
+  .card-hover {
+    @apply transition-all duration-300 ease-out hover:scale-[1.03] hover:border-cyan/60;
+  }
+  .card-hover:hover {
+    box-shadow:
+      0 0 0 1px rgba(139, 92, 246, 0.4),
+      0 0 18px rgba(139, 92, 246, 0.3),
+      0 0 32px rgba(34, 211, 238, 0.2);
+  }
+  .btn-primary {
+    @apply bg-gradient-to-br from-violet to-cyan text-bg font-display font-semibold
+           px-5 py-2.5 rounded-card hover:opacity-90 transition-opacity
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-transparent text-ink font-display font-medium px-5 py-2.5 rounded-card
+           border border-border hover:border-ink/30 transition-colors;
+  }
+  .label-eyebrow {
+    @apply font-mono text-[11px] uppercase tracking-wider text-ink-faint;
+  }
+}
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #8b5cf6, #22d3ee);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
