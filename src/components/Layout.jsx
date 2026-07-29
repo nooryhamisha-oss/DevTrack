@@ -62,7 +62,7 @@ export default function Layout() {
   }
   return (
     <div className="min-h-screen flex bg-bg">
-      {/* Mobile top bar */}
+      
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border bg-bg flex items-center justify-between px-4 z-50">
         <NavLink
           to="/app"
@@ -83,7 +83,7 @@ export default function Layout() {
         </button>
       </div>
 
-      {/* Mobile overlay */}
+    
       {mobileOpen && (
         <div
           className="md:hidden fixed inset-0 bg-black/60 z-40"
@@ -91,7 +91,7 @@ export default function Layout() {
         />
       )}
 
-      {/* Sidebar */}
+    
       <aside
         className={`fixed md:sticky top-0 left-0 h-screen shrink-0
         border-r border-border flex flex-col px-4 py-6 bg-bg z-50

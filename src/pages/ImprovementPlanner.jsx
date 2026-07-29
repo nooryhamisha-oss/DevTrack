@@ -21,7 +21,7 @@ export default function ImprovementPlanner() {
   useEffect(() => {
     if (!skillGapResult || learningPath) return;
     buildPath();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, [skillGapResult]);
 
   async function buildPath() {

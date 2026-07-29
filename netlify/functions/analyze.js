@@ -76,7 +76,7 @@ async function callWithFallback(systemPrompt, prompt) {
       return await callOpenRouter(systemPrompt, prompt);
     } catch (orErr) {
       console.error("OpenRouter also failed:", orErr.message);
-      throw new Error("همه‌ی سرویس‌های هوش مصنوعی موقتاً در دسترس نیستند.");
+      throw new Error("All AI services are temporarily unavailable.");
     }
   }
 }
@@ -94,7 +94,7 @@ export const handler = async (event) => {
     if (!prompt) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: "پرامپت خالی است." }),
+        body: JSON.stringify({ error: "The prompt is empty." }),
       };
     }
 
@@ -111,7 +111,7 @@ export const handler = async (event) => {
       statusCode: 502,
       body: JSON.stringify({
         error:
-          "همه‌ی سرویس‌های هوش مصنوعی موقتاً در دسترس نیستند. چند دقیقه دیگر تلاش کنید.",
+          "  All AI services are temporarily unavailable. Please try again in a few minutes.  ",
       }),
     };
   }

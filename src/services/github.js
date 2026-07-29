@@ -48,7 +48,7 @@ export async function fetchRepoTree(owner, repoName) {
       entries.push(item.type === "dir" ? `${item.name}/` : item.name);
     }
 
-    // Peek one level into the most common source folders for a bit more signal.
+    
     const foldersToPeek = root
       .filter(
         (item) =>
