@@ -71,9 +71,7 @@ export default function Login() {
           </div>
         </div>
 
-        <p className="text-bg/70 text-xs relative">
-          © 2026 DevTrack. Built as a student project.
-        </p>
+        <p className="text-bg/70 text-xs relative">© 2026 DevTrack.</p>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-10">
