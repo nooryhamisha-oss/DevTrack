@@ -226,10 +226,12 @@ export default function SkillGap() {
               </div>
             ))}
           </div>
-          <div className="space-y-1.5 mb-8">
+          <div className="space-y-2 mb-8 card p-4">
             {sortedMissing.map((m, i) => (
-              <p key={i} className="text-xs text-ink-faint">
-                <span className="text-ink-soft font-mono">{m.skill}:</span>{" "}
+              <p key={i} className="text-xs text-ink-soft leading-relaxed">
+                <span className="text-ink font-mono font-semibold">
+                  {m.skill}:
+                </span>{" "}
                 {m.reason}
               </p>
             ))}

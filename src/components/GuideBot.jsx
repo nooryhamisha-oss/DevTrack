@@ -55,7 +55,6 @@ export default function GuideBot() {
         { role: "assistant", content: guideNotification.message },
       ]);
     }
-    
   }, [guideNotification?.message]);
 
   useEffect(() => {

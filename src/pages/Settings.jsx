@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
-  Settings as SettingsIcon,
+  User,
   BarChart3,
   ShieldCheck,
   LogOut,
+  Mail,
+  Lock,
+  Check,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { supabase } from "../services/supabase.js";
@@ -27,8 +30,18 @@ function autoAvatarColor(seed) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
 }
+
+const TABS = [
+  { id: "profile", label: "Profile", icon: User },
+  { id: "progress", label: "Progress Report", icon: BarChart3 },
+  { id: "security", label: "Security", icon: ShieldCheck },
+  { id: "account", label: "Account", icon: LogOut },
+];
+
 export default function Settings() {
   const { profile, user, updateProfile, signOut } = useAuth();
+  const [activeTab, setActiveTab] = useState("profile");
+
   const [firstName, setFirstName] = useState(profile?.first_name || "");
   const [lastName, setLastName] = useState(profile?.last_name || "");
   const [saved, setSaved] = useState(false);
@@ -43,6 +56,13 @@ export default function Settings() {
 
   const [period, setPeriod] = useState("week");
   const [history, setHistory] = useState([]);
+
+  // profile loads async — sync the form once it actually arrives
+  useEffect(() => {
+    if (!profile) return;
+    setFirstName(profile.first_name || "");
+    setLastName(profile.last_name || "");
+  }, [profile]);
 
   useEffect(() => {
     if (!user) return;
@@ -79,6 +99,7 @@ export default function Settings() {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
+
   async function handleChangeEmail(e) {
     e.preventDefault();
     setEmailError("");
@@ -102,7 +123,9 @@ export default function Settings() {
       setPasswordError("Password must be at least 6 characters.");
       return;
     }
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
     if (error) {
       setPasswordError(error.message);
     } else {
@@ -111,205 +134,260 @@ export default function Settings() {
     }
   }
   return (
-    <>
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/dashboard" className="btn-secondary flex items-center gap-2">
-          <ArrowLeft size={16} />
-          Back
-        </Link>
-      </div>
+    <div>
+      <Link
+        to="/dashboard"
+        className="inline-flex items-center gap-2 text-sm text-ink-faint hover:text-ink mb-6 font-mono"
+      >
+        <ArrowLeft size={16} /> Back to Dashboard
+      </Link>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-display font-bold flex items-center gap-3">
-          <SettingsIcon size={28} />
-          SETTINGS
-        </h1>
-        <p className="text-lg font-semibold mt-2">Account Settings</p>
-        <p className="text-ink-faint">
-          Manage your profile, progress, and account security.
-        </p>
-      </div>
-
-      <div className="card p-6 mb-5">
-        <p className="label-eyebrow mb-4">Profile</p>
-
-        <div className="flex items-center gap-3 mb-5">
-          <span
-            className="w-12 h-12 rounded-full flex items-center justify-center text-base font-display font-semibold text-bg shrink-0"
-            style={{ background: avatarColor }}
-          >
-            {(firstName || "U").charAt(0).toUpperCase()}
-          </span>
-
-          <div className="min-w-0">
-            <p className="font-semibold truncate">
-              {firstName || lastName
-                ? `${firstName} ${lastName}`.trim()
-                : "Unnamed user"}
-            </p>
-            <p className="text-xs text-ink-faint truncate">{user?.email}</p>
-          </div>
-        </div>
-
-        <form onSubmit={handleSaveProfile} className="grid grid-cols-2 gap-3">
-          <input
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            placeholder="First name"
-            className="px-3 py-2.5 rounded-card border border-border bg-panel text-ink text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet"
-          />
-
-          <input
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            placeholder="Last name"
-            className="px-3 py-2.5 rounded-card border border-border bg-panel text-ink text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet"
-          />
-
-          <button type="submit" className="btn-primary col-span-2 mt-1">
-            {saved ? "Saved ✓" : "Save Changes"}
-          </button>
-        </form>
-      </div>
-
-      <div className="card p-6 mb-5">
-        <div className="flex items-center justify-between mb-4">
-          <p className="label-eyebrow flex items-center gap-2">
-            <BarChart3 size={13} />
-            Progress Report
+      <div className="flex items-center gap-4 mb-8">
+        <span
+          className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-display font-semibold text-bg shrink-0"
+          style={{ background: avatarColor }}
+        >
+          {(firstName || "U").charAt(0).toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl font-semibold truncate">
+            {firstName || lastName
+              ? `${firstName} ${lastName}`.trim()
+              : "Unnamed user"}
+          </h1>
+          <p className="text-sm text-ink-faint truncate font-mono">
+            {user?.email}
           </p>
+        </div>
+      </div>
 
-          <div className="flex gap-1">
-            {["day", "week", "month"].map((p) => (
+      <div className="flex items-start w-fit justify-between gap-8 w-full">
+        {/* ---- Sidebar tab nav ---- */}
+        <nav className="card p-6 space-y-1 sticky top-6 order-2 w-[270px] shrink-0">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            return (
               <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`text-[11px] font-mono px-2.5 py-1 rounded-card capitalize transition-colors ${
-                  period === p
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-card text-sm text-left transition-colors ${
+                  active
                     ? "bg-violet-soft text-violet font-semibold"
-                    : "text-ink-faint hover:text-ink"
+                    : "text-ink-soft hover:text-ink hover:bg-panel"
                 }`}
               >
-                {p}
+                <Icon size={15} className="shrink-0" />
+                {tab.label}
               </button>
-            ))}
-          </div>
+            );
+          })}
+        </nav>
+
+        <div className="order-1 max-w-xl">
+          {activeTab === "profile" && (
+            <div className="card p-6">
+              <p className="label-eyebrow mb-1">Profile</p>
+              <h2 className="font-display text-lg font-semibold mb-5">
+                Name &amp; identity
+              </h2>
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="label-eyebrow flex items-center gap-1.5 mb-2">
+                      <User size={12} /> First name
+                    </label>
+                    <input
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="First name"
+                      className="w-full px-3 py-2.5 rounded-card border border-border bg-panel text-ink text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet"
+                    />
+                  </div>
+                  <div>
+                    <label className="label-eyebrow flex items-center gap-1.5 mb-2">
+                      <User size={12} /> Last name
+                    </label>
+                    <input
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Last name"
+                      className="w-full px-3 py-2.5 rounded-card border border-border bg-panel text-ink text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="btn-primary flex items-center gap-2"
+                >
+                  {saved && <Check size={15} />}
+                  {saved ? "Saved" : "Save Changes"}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {activeTab === "progress" && (
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <p className="label-eyebrow mb-1">Progress Report</p>
+                  <h2 className="font-display text-lg font-semibold">
+                    Your analysis activity
+                  </h2>
+                </div>
+                <div className="flex gap-1">
+                  {["day", "week", "month"].map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPeriod(p)}
+                      className={`text-[11px] font-mono px-2.5 py-1 rounded-card capitalize transition-colors ${
+                        period === p
+                          ? "bg-violet-soft text-violet font-semibold"
+                          : "text-ink-faint hover:text-ink"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {inRange.length === 0 ? (
+                <p className="text-sm text-ink-faint">
+                  No analyses in this period yet.
+                </p>
+              ) : (
+                <>
+                  <div className="flex gap-8 mb-6">
+                    <div>
+                      <p className="font-display text-2xl font-semibold">
+                        {inRange.length}
+                      </p>
+                      <p className="text-[11px] text-ink-faint">
+                        analyses this {period}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-display text-2xl font-semibold">
+                        {avgScore}
+                      </p>
+                      <p className="text-[11px] text-ink-faint">
+                        average score
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-end gap-1.5 h-24">
+                    {inRange.map((h) => (
+                      <div
+                        key={h.id}
+                        title={`${h.repo_name}: ${h.quality_score}/100`}
+                        className="flex-1 rounded-t-sm bg-gradient-to-t from-violet to-cyan opacity-80 hover:opacity-100 transition-opacity"
+                        style={{
+                          height: `${(h.quality_score / maxScore) * 100}%`,
+                          minHeight: 4,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {activeTab === "security" && (
+            <div className="space-y-5">
+              <div className="card p-6">
+                <p className="label-eyebrow mb-1">Security</p>
+                <h2 className="font-display text-lg font-semibold mb-1">
+                  Change email
+                </h2>
+                <p className="text-xs text-ink-faint mb-4">
+                  Current:{" "}
+                  <span className="font-mono text-ink-soft">{user?.email}</span>
+                </p>
+                <form onSubmit={handleChangeEmail} className="space-y-3">
+                  <div>
+                    <label className="label-eyebrow flex items-center gap-1.5 mb-2">
+                      <Mail size={12} /> New email address
+                    </label>
+                    <input
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      required
+                      className="w-full px-3 py-2.5 rounded-card border border-border bg-panel text-ink text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet"
+                    />
+                  </div>
+                  {emailError && (
+                    <p className="text-xs text-flag">{emailError}</p>
+                  )}
+                  {emailStatus && (
+                    <p className="text-xs text-grow leading-relaxed">
+                      {emailStatus}
+                    </p>
+                  )}
+                  <button type="submit" className="btn-secondary text-sm">
+                    Update Email
+                  </button>
+                </form>
+              </div>
+
+              <div className="card p-6">
+                <h2 className="font-display text-lg font-semibold mb-4">
+                  Change password
+                </h2>
+                <form onSubmit={handleChangePassword} className="space-y-3">
+                  <div>
+                    <label className="label-eyebrow flex items-center gap-1.5 mb-2">
+                      <Lock size={12} /> New password
+                    </label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="At least 6 characters"
+                      required
+                      className="w-full px-3 py-2.5 rounded-card border border-border bg-panel text-ink text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet"
+                    />
+                  </div>
+                  {passwordError && (
+                    <p className="text-xs text-flag">{passwordError}</p>
+                  )}
+                  {passwordStatus && (
+                    <p className="text-xs text-grow">{passwordStatus}</p>
+                  )}
+                  <button type="submit" className="btn-secondary text-sm">
+                    Update Password
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "account" && (
+            <div className="card p-6">
+              <p className="label-eyebrow mb-1">Account</p>
+              <h2 className="font-display text-lg font-semibold mb-5">
+                Sign out
+              </h2>
+              <p className="text-sm text-ink-soft mb-5">
+                You'll need to log in again to access your dashboard and
+                history.
+              </p>
+              <button
+                onClick={signOut}
+                className="btn-secondary flex items-center gap-2 text-sm text-flag border-flag/30 hover:bg-flag-soft"
+              >
+                <LogOut size={14} />
+                Log Out
+              </button>
+            </div>
+          )}
         </div>
-
-        {inRange.length === 0 ? (
-          <p className="text-xs text-ink-faint">
-            No analyses in this period yet.
-          </p>
-        ) : (
-          <>
-            <div className="flex gap-6 mb-5">
-              <div>
-                <p className="font-display text-2xl font-semibold">
-                  {inRange.length}
-                </p>
-                <p className="text-[11px] text-ink-faint">
-                  analyses this {period}
-                </p>
-              </div>
-
-              <div>
-                <p className="font-display text-2xl font-semibold">
-                  {avgScore}
-                </p>
-                <p className="text-[11px] text-ink-faint">average score</p>
-              </div>
-            </div>
-
-            <div className="flex items-end gap-1.5 h-20">
-              {inRange.map((h) => (
-                <div
-                  key={h.id}
-                  title={`${h.repo_name}: ${h.quality_score}/100`}
-                  className="flex-1 rounded-t-sm bg-gradient-to-t from-violet to-cyan opacity-80 hover:opacity-100 transition-opacity"
-                  style={{
-                    height: `${(h.quality_score / maxScore) * 100}%`,
-                    minHeight: 4,
-                  }}
-                />
-              ))}
-            </div>
-          </>
-        )}
       </div>
-
-      <div className="card p-6 mb-5">
-        <p className="label-eyebrow mb-4 flex items-center gap-2">
-          <ShieldCheck size={13} />
-          Security
-        </p>
-
-        <form onSubmit={handleChangeEmail} className="mb-5">
-          <p className="text-xs text-ink-faint mb-2">
-            Change email — current:{" "}
-            <span className="font-mono text-ink-soft">{user?.email}</span>
-          </p>
-
-          <div className="flex gap-2">
-            <input
-              type="email"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-              placeholder="New email address"
-              required
-              className="flex-1 px-3 py-2.5 rounded-card border border-border bg-panel text-ink text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet"
-            />
-
-            <button type="submit" className="btn-secondary text-sm px-4">
-              Update
-            </button>
-          </div>
-
-          {emailError && <p className="text-xs text-flag mt-2">{emailError}</p>}
-
-          {emailStatus && (
-            <p className="text-xs text-grow mt-2">{emailStatus}</p>
-          )}
-        </form>
-
-        <form onSubmit={handleChangePassword}>
-          <p className="text-xs text-ink-faint mb-2">Change password</p>
-
-          <div className="flex gap-2">
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="New password (min 6 characters)"
-              required
-              className="flex-1 px-3 py-2.5 rounded-card border border-border bg-panel text-ink text-sm font-mono focus:outline-none focus:ring-2 focus:ring-violet"
-            />
-
-            <button type="submit" className="btn-secondary text-sm px-4">
-              Update
-            </button>
-          </div>
-
-          {passwordError && (
-            <p className="text-xs text-flag mt-2">{passwordError}</p>
-          )}
-
-          {passwordStatus && (
-            <p className="text-xs text-grow mt-2">{passwordStatus}</p>
-          )}
-        </form>
-      </div>
-
-      <div className="card p-6">
-        <p className="label-eyebrow mb-4">Account</p>
-
-        <button
-          onClick={signOut}
-          className="btn-secondary flex items-center gap-2 text-sm text-flag border-flag/30 hover:bg-flag-soft"
-        >
-          <LogOut size={14} />
-          Log Out
-        </button>
-      </div>
-    </>
+    </div>
   );
 }

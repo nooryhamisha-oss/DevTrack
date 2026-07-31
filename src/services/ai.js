@@ -6,7 +6,17 @@ async function callAI(systemPrompt, prompt) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ systemPrompt, prompt }),
   });
-  const data = await res.json();
+
+  const rawText = await res.text();
+  let data;
+  try {
+    data = JSON.parse(rawText);
+  } catch {
+    throw new Error(
+      "The server took too long to respond. Please try again in a moment.",
+    );
+  }
+
   if (!res.ok) {
     const message =
       typeof data.error === "string"
@@ -167,7 +177,6 @@ export function buildResourceLinks(keyword) {
     },
   ];
 }
-
 
 const GUIDE_SYSTEM_PROMPT = `You are "DreamEagle", the friendly in-app guide for DevTrack, an AI tool that
 analyzes a developer's GitHub repositories and turns them into a job-ready portfolio evaluation.

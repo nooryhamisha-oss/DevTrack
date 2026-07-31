@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { GitBranch, Loader2, Sparkles, Target, Milestone } from "lucide-react";
+import { GitBranch, Loader2, User, Mail, Lock, ArrowRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
+import AuthVisual from "../components/AuthVisual.jsx";
 
 export default function Signup() {
   const { signUp } = useAuth();
@@ -38,14 +39,17 @@ export default function Signup() {
 
   if (checkEmail) {
     return (
-      <div className="min-h-screen bg-bg text-ink flex items-center justify-center px-6">
-        <div className="max-w-sm text-center">
+      <div className="min-h-screen bg-bg text-ink flex items-center justify-center px-6 relative overflow-hidden">
+        <div className="absolute top-[-15%] right-[10%] w-[480px] h-[480px] rounded-full opacity-[0.14] blur-[130px] bg-violet pointer-events-none" />
+        <div className="relative card p-8 max-w-sm text-center">
+          <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-violet to-cyan rounded-t-card" />
           <h1 className="font-display text-xl font-semibold mb-2">
             Check your email
           </h1>
           <p className="text-sm text-ink-soft">
-            We sent a confirmation link to <strong>{email}</strong>. Click it,
-            then come back and log in.
+            We sent a confirmation link to{" "}
+            <strong className="text-ink">{email}</strong>. Click it, then come
+            back and log in.
           </p>
           <Link
             to="/login"
@@ -58,131 +62,129 @@ export default function Signup() {
     );
   }
   return (
-    <div className="min-h-screen bg-bg text-ink flex">
+    <div className="min-h-screen bg-bg text-ink flex relative overflow-hidden">
       <div
-        className="hidden md:flex md:w-[45%] relative flex-col justify-between p-12 overflow-hidden"
-        style={{ background: "linear-gradient(160deg, #8b5cf6, #22d3ee)" }}
-      >
-        <div
-          className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full opacity-20 blur-3xl"
-          style={{ background: "#fff" }}
-        />
-        <Link
-          to="/"
-          className="flex items-center gap-2 font-display font-semibold text-lg text-bg relative"
-        >
-          <span className="w-8 h-8 rounded-lg bg-bg/20 backdrop-blur flex items-center justify-center">
-            <GitBranch size={16} strokeWidth={2.5} />
-          </span>
-          DevTrack
-        </Link>
+        className="absolute inset-0 opacity-[0.05] pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(#EDEFF5 1px, transparent 1px), linear-gradient(90deg, #EDEFF5 1px, transparent 1px)",
+          backgroundSize: "42px 42px",
+        }}
+      />
 
-        <div className="relative">
-          <p className="font-display text-3xl font-semibold text-bg leading-tight mb-8">
-            Your progress, saved to an account that's actually yours.
-          </p>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 text-bg/90">
-              <span className="w-8 h-8 rounded-lg bg-bg/20 flex items-center justify-center shrink-0">
-                <Sparkles size={15} />
-              </span>
-              <p className="text-sm">Every analysis saved permanently</p>
-            </div>
-            <div className="flex items-center gap-3 text-bg/90">
-              <span className="w-8 h-8 rounded-lg bg-bg/20 flex items-center justify-center shrink-0">
-                <Target size={15} />
-              </span>
-              <p className="text-sm">Track your score over time</p>
-            </div>
-            <div className="flex items-center gap-3 text-bg/90">
-              <span className="w-8 h-8 rounded-lg bg-bg/20 flex items-center justify-center shrink-0">
-                <Milestone size={15} />
-              </span>
-              <p className="text-sm">Secure — only visible to you</p>
-            </div>
-          </div>
-        </div>
+      <div className="absolute top-[-15%] right-[10%] w-[480px] h-[480px] rounded-full opacity-[0.14] blur-[130px] bg-violet pointer-events-none" />
 
-        <p className="text-bg/70 text-xs relative">© 2026 DevTrack.</p>
-      </div>
+      <div className="absolute bottom-[-15%] left-[5%] w-[420px] h-[420px] rounded-full opacity-[0.12] blur-[130px] bg-cyan pointer-events-none" />
 
-      <div className="flex-1 flex items-center justify-center px-6 py-10">
+      <div className="relative flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
           <Link
             to="/"
-            className="md:hidden flex items-center gap-2 font-display font-semibold text-lg mb-8 justify-center"
+            className="flex items-center gap-2 font-display font-semibold text-lg mb-10"
           >
             <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet to-cyan flex items-center justify-center">
-              <GitBranch size={15} strokeWidth={2.5} />
+              <GitBranch size={15} strokeWidth={2.5} className="text-bg" />
             </span>
             DevTrack
           </Link>
 
           <p className="label-eyebrow mb-2">Get started</p>
-          <h1 className="font-display text-2xl font-semibold mb-8">
+
+          <h1 className="font-display text-2xl font-semibold mb-1">
             Create your account
           </h1>
-          <form onSubmit={handleSubmit} className="space-y-3.5">
-            <div className="grid grid-cols-2 gap-3">
+
+          <p className="text-sm text-ink-faint mb-8">
+            Every analysis you run gets saved to your own history.
+          </p>
+
+          <div className="relative card p-6 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-violet to-cyan" />
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label-eyebrow flex items-center gap-1.5 mb-2">
+                    <User size={12} /> First name
+                  </label>
+
+                  <input
+                    type="text"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-card border border-border bg-panel text-ink text-sm focus:outline-none focus:ring-2 focus:ring-violet transition-shadow"
+                  />
+                </div>
+
+                <div>
+                  <label className="label-eyebrow flex items-center gap-1.5 mb-2">
+                    <User size={12} /> Last name
+                  </label>
+
+                  <input
+                    type="text"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-card border border-border bg-panel text-ink text-sm focus:outline-none focus:ring-2 focus:ring-violet transition-shadow"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="label-eyebrow block mb-1.5">First name</label>
+                <label className="label-eyebrow flex items-center gap-1.5 mb-2">
+                  <Mail size={12} /> Email
+                </label>
+
                 <input
-                  type="text"
+                  type="email"
                   required
-                  placeholder="Hamisha"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-card border border-border bg-panel text-ink text-sm focus:outline-none focus:ring-2 focus:ring-violet"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-card border border-border bg-panel text-ink text-sm focus:outline-none focus:ring-2 focus:ring-violet transition-shadow"
                 />
               </div>
+
               <div>
-                <label className="label-eyebrow block mb-1.5">Last name</label>
+                <label className="label-eyebrow flex items-center gap-1.5 mb-2">
+                  <Lock size={12} /> Password
+                </label>
+
                 <input
-                  type="text"
+                  type="password"
                   required
-                  placeholder="Hamrah"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-card border border-border bg-panel text-ink text-sm focus:outline-none focus:ring-2 focus:ring-violet"
+                  placeholder="At least 6 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-card border border-border bg-panel text-ink text-sm focus:outline-none focus:ring-2 focus:ring-violet transition-shadow"
                 />
               </div>
-            </div>
-            <div>
-              <label className="label-eyebrow block mb-1.5">Email</label>
-              <input
-                type="email"
-                required
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-card border border-border bg-panel text-ink text-sm focus:outline-none focus:ring-2 focus:ring-violet"
-              />
-            </div>
-            <div>
-              <label className="label-eyebrow block mb-1.5">Password</label>
-              <input
-                type="password"
-                required
-                placeholder="At least 6 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-card border border-border bg-panel text-ink text-sm focus:outline-none focus:ring-2 focus:ring-violet"
-              />
-            </div>
 
-            {error && <p className="text-xs text-flag">{error}</p>}
+              {error && (
+                <p className="text-xs text-flag bg-flag-soft border border-flag/25 rounded-card px-3 py-2">
+                  {error}
+                </p>
+              )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2 py-3 mt-2"
-            >
-              {loading && <Loader2 size={15} className="animate-spin" />}
-              {loading ? "Creating account..." : "Sign Up"}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full flex items-center justify-center gap-2 py-2.5"
+              >
+                {loading ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <ArrowRight size={15} />
+                )}
 
-          <p className="text-center text-sm text-ink-faint mt-6">
+                {loading ? "Creating account..." : "Sign Up"}
+              </button>
+            </form>
+          </div>
+
+          <p className="text-center text-xs text-ink-faint mt-6">
             Already have an account?{" "}
             <Link to="/login" className="text-violet font-semibold">
               Log in
@@ -190,6 +192,8 @@ export default function Signup() {
           </p>
         </div>
       </div>
+
+      <AuthVisual />
     </div>
   );
 }

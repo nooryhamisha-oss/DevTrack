@@ -8,7 +8,7 @@ async function callGroq(systemPrompt, prompt) {
         Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages: [
           {
             role: "system",
@@ -67,6 +67,7 @@ async function callOpenRouter(systemPrompt, prompt) {
   if (!content) throw new Error("OpenRouter returned empty content");
   return content;
 }
+
 async function callWithFallback(systemPrompt, prompt) {
   try {
     return await callGroq(systemPrompt, prompt);
@@ -111,7 +112,7 @@ export const handler = async (event) => {
       statusCode: 502,
       body: JSON.stringify({
         error:
-          "  All AI services are temporarily unavailable. Please try again in a few minutes.  ",
+          "All AI services are temporarily unavailable. Please try again in a few minutes.",
       }),
     };
   }
