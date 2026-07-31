@@ -106,7 +106,6 @@ export default function Signup() {
                   <input
                     type="text"
                     required
-                    placeholder="Hamisha"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-card border border-border bg-panel text-ink text-sm focus:outline-none focus:ring-2 focus:ring-violet transition-shadow"
@@ -119,7 +118,6 @@ export default function Signup() {
                   <input
                     type="text"
                     required
-                    placeholder="Hamrah"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-card border border-border bg-panel text-ink text-sm focus:outline-none focus:ring-2 focus:ring-violet transition-shadow"
