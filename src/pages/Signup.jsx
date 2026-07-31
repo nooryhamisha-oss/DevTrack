@@ -144,7 +144,7 @@ export default function Settings() {
           className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-display font-semibold text-bg shrink-0"
           style={{ background: avatarColor }}
         >
-          {displayName.charAt(0).toUpperCase()}
+          {displayName?.charAt(0)?.toUpperCase() || "U"}
         </span>
         <div className="min-w-0">
           <h1 className="font-display text-2xl font-semibold truncate">
