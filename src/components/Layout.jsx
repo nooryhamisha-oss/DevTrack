@@ -16,10 +16,9 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import GuideBot from "./GuideBot.jsx";
-
 const NAV_ITEMS = [
-  { to: "/app", label: "Home", icon: Home, end: true },
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/app", label: "Dashboard", icon: Home, end: true },
+  { to: "/dashboard", label: " ProjectAnalysis", icon: LayoutDashboard },
   { to: "/skill-gap", label: "Skill Gap", icon: Target },
   { to: "/planner", label: "Roadmap", icon: Milestone },
   { to: "/history", label: "History", icon: History },
@@ -27,8 +26,8 @@ const NAV_ITEMS = [
 ];
 
 const PAGE_TITLES = {
-  "/app": "Home",
-  "/dashboard": "Dashboard",
+  "/app": "Dashboard",
+  "/dashboard": "Analysis",
   "/skill-gap": "Skill Gap",
   "/planner": "Roadmap",
   "/history": "History",
@@ -60,6 +59,7 @@ export default function Layout() {
     await signOut();
     navigate("/");
   }
+
   return (
     <div className="min-h-screen flex bg-bg">
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-border bg-bg flex items-center justify-between px-4 z-50">
@@ -238,7 +238,6 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
-
       <GuideBot />
     </div>
   );

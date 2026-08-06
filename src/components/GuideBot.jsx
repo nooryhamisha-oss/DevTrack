@@ -2,12 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
 import { askGuideBot, buildGreeting } from "../services/ai.js";
+import { fetchChatHistory, saveChatMessage } from "../services/chat.js";
 import { useDevTrack } from "../context/DevTrackContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const PAGE_NAMES = {
-  "/": "Home",
-  "/app": "Home",
-  "/dashboard": "Dashboard",
+  "/": "Dashboard",
+  "/app": "Dashboard",
+  "/dashboard": "Project Analysis",
   "/skill-gap": "Skill Gap",
   "/planner": "Roadmap",
   "/history": "Progress History",
@@ -22,6 +24,7 @@ const QUICK_SUGGESTIONS = [
 
 export default function GuideBot() {
   const location = useLocation();
+  const { user } = useAuth();
   const {
     guideNotification,
     markGuideNotificationRead,
@@ -38,10 +41,23 @@ export default function GuideBot() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef(null);
   const panelRef = useRef(null);
+  const historyLoadedRef = useRef(false);
+
+  useEffect(() => {
+    if (!user || historyLoadedRef.current) return;
+    historyLoadedRef.current = true;
+    fetchChatHistory(user.id)
+      .then((history) => {
+        if (history.length > 0) setMessages(history);
+      })
+      .catch(() => {});
+  }, [user?.id]);
 
   const currentPageName =
     PAGE_NAMES[location.pathname] ||
-    (location.pathname.startsWith("/repo/") ? "Repository Analysis" : "Home");
+    (location.pathname.startsWith("/repo/")
+      ? "Repository Analysis"
+      : "Dashboard");
 
   useEffect(() => {
     if (scrollRef.current)
@@ -79,6 +95,7 @@ export default function GuideBot() {
     setMessages(nextMessages);
     setInput("");
     setLoading(true);
+    if (user) saveChatMessage(user.id, "user", text).catch(() => {});
     try {
       const reply = await askGuideBot(nextMessages, currentPageName, {
         username,
@@ -87,6 +104,7 @@ export default function GuideBot() {
         learningPath,
       });
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+      if (user) saveChatMessage(user.id, "assistant", reply).catch(() => {});
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -106,7 +124,6 @@ export default function GuideBot() {
   }
 
   const isFreshConversation = messages.length <= 1;
-
   return (
     <>
       <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2">

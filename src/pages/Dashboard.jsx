@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
+  Search,
   Loader2,
+  Star,
+  GitFork,
   ArrowRight,
   History,
   Share2,
@@ -12,6 +15,8 @@ import { useDevTrack } from "../context/DevTrackContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { createSnapshot } from "../services/share.js";
 import {
+  fetchGithubUser,
+  fetchUserRepos,
   fetchRepoReadme,
   fetchRepoLanguages,
   fetchRepoTree,
@@ -20,32 +25,71 @@ import { analyzeRepository, evaluatePortfolio } from "../services/ai.js";
 import ScoreDonut from "../components/ScoreDonut.jsx";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const [shareUrl, setShareUrl] = useState("");
-  const [sharing, setSharing] = useState(false);
-  const [copied, setCopied] = useState(false);
   const {
     username,
+    setUsername,
+    setProfile,
     repos,
+    setRepos,
     selectedRepos,
+    setSelectedRepos,
     analyses,
     saveAnalysis,
     portfolioResult,
     setPortfolioResult,
     pushGuideNotification,
   } = useDevTrack();
+
+  const [inputValue, setInputValue] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [started, setStarted] = useState(false);
+
   const [step, setStep] = useState("");
   const [error, setError] = useState("");
+  const [shareUrl, setShareUrl] = useState("");
+  const [sharing, setSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   const selectedRepoObjects = repos.filter((r) =>
     selectedRepos.includes(r.name),
   );
 
-  useEffect(() => {
-    if (selectedRepoObjects.length === 0) {
-      navigate("/app");
-      return;
+  async function handleSearch(e) {
+    e.preventDefault();
+    if (!inputValue.trim()) return;
+    setSearchLoading(true);
+    setSearchError("");
+    try {
+      const [userData, repoData] = await Promise.all([
+        fetchGithubUser(inputValue.trim()),
+        fetchUserRepos(inputValue.trim()),
+      ]);
+      setUsername(inputValue.trim());
+      setProfile(userData);
+      setRepos(repoData);
+      setSelectedRepos([]);
+      setInputValue("");
+    } catch (err) {
+      setSearchError(err.message);
+      setProfile(null);
+      setRepos([]);
+    } finally {
+      setSearchLoading(false);
     }
+  }
+
+  function toggleRepo(repoName) {
+    setSelectedRepos((prev) =>
+      prev.includes(repoName)
+        ? prev.filter((r) => r !== repoName)
+        : [...prev, repoName],
+    );
+  }
+
+  useEffect(() => {
+    if (!started || selectedRepoObjects.length === 0) return;
     let cancelled = false;
 
     async function runPipeline() {
@@ -84,7 +128,7 @@ export default function Dashboard() {
           if (!cancelled) {
             setPortfolioResult(result);
             pushGuideNotification(
-              `Analysis complete! Your portfolio score is ${result.portfolioScore}/100. Check out Skill Gap next to see what to learn.`,
+              ` Analysis complete! Your portfolio score is ${result.portfolioScore}/100. Check out Skill Gap next to see what to learn.`,
             );
           }
         } catch (err) {
@@ -97,9 +141,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, [selectedRepos.join(",")]);
-
-  if (selectedRepoObjects.length === 0) return null;
+  }, [started, selectedRepos.join(",")]);
   const avgQuality = Object.values(analyses).length
     ? Math.round(
         Object.values(analyses).reduce((s, a) => s + a.qualityScore, 0) /
@@ -131,6 +173,107 @@ export default function Dashboard() {
       setSharing(false);
     }
   }
+
+  if (!started) {
+    return (
+      <div>
+        <p className="label-eyebrow mb-2">Project Analysis</p>
+        <h1 className="font-display text-2xl font-semibold mb-1">
+          Analyze a GitHub profile
+        </h1>
+        <p className="text-ink-faint text-sm mb-6">
+          Enter a GitHub username, pick the repositories you want reviewed, then
+          start the analysis.
+        </p>
+
+        <form onSubmit={handleSearch} className="flex gap-2.5 mb-8">
+          <div className="relative flex-1">
+            <Search
+              size={17}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint"
+            />
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder={
+                username
+                  ? `Currently: ${username} — type a new username`
+                  : "GitHub username (e.g. torvalds)"
+              }
+              className="w-full pl-11 pr-4 py-3 rounded-card border border-border bg-panel text-ink font-mono text-sm focus:outline-none focus:ring-2 focus:ring-violet"
+            />
+          </div>
+          <button
+            type="submit"
+            className="btn-primary flex items-center gap-2"
+            disabled={searchLoading}
+          >
+            {searchLoading && <Loader2 size={16} className="animate-spin" />}
+            {searchLoading ? "Fetching..." : "Search"}
+          </button>
+        </form>
+
+        {searchError && (
+          <div className="mb-8 px-4 py-3 rounded-card bg-flag-soft border border-flag/30 text-sm text-flag">
+            {searchError}
+          </div>
+        )}
+
+        {repos.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="label-eyebrow mb-0">
+                {repos.length} repositories found
+              </p>
+              <span className="label-eyebrow">
+                {selectedRepos.length} selected
+              </span>
+            </div>
+            <div className="space-y-2 mb-6">
+              {repos.map((repo) => (
+                <label
+                  key={repo.id}
+                  className="card card-hover flex items-center gap-4 px-4 py-3 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedRepos.includes(repo.name)}
+                    onChange={() => toggleRepo(repo.name)}
+                    className="accent-violet w-4 h-4"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono text-[13px] font-semibold truncate">
+                      {repo.name}
+                    </p>
+                    <p className="text-xs text-ink-faint truncate mt-0.5">
+                      {repo.description || "No description provided"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-ink-faint font-mono shrink-0">
+                    <span className="flex items-center gap-1">
+                      <Star size={12} /> {repo.stargazers_count}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <GitFork size={12} /> {repo.forks_count}
+                    </span>
+                  </div>
+                </label>
+              ))}
+            </div>
+            <button
+              onClick={() => setStarted(true)}
+              disabled={selectedRepos.length === 0}
+              className="btn-primary w-full py-3.5"
+            >
+              Analyze {selectedRepos.length} selected repositories
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-start justify-between mb-6">
