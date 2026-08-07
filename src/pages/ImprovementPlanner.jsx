@@ -21,7 +21,6 @@ export default function ImprovementPlanner() {
   useEffect(() => {
     if (!skillGapResult || learningPath) return;
     buildPath();
-  
   }, [skillGapResult]);
 
   async function buildPath() {
@@ -103,46 +102,47 @@ export default function ImprovementPlanner() {
           {error}
         </div>
       )}
-
       {learningPath && !loading && (
         <>
-          <div className="relative overflow-x-auto pb-4 mb-6 -mx-1 px-1">
-            <div className="flex items-start gap-0 min-w-max">
-              {learningPath.steps.map((step, i) => (
-                <div key={i} className="flex items-start">
-                  <button
-                    onClick={() => setOpenStep(i)}
-                    className="flex flex-col items-center w-[132px] shrink-0 group"
+          <div className="flex flex-wrap justify-center sm:justify-start items-start gap-y-4 mb-6">
+            {learningPath.steps.map((step, i) => (
+              <div key={i} className="flex items-start">
+                <button
+                  onClick={() => setOpenStep(i)}
+                  className="flex flex-col items-center w-[92px] sm:w-[132px] shrink-0 group"
+                >
+                  <span
+                    className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-display text-xs sm:text-sm font-semibold border-2 transition-all ${
+                      openStep === i
+                        ? "bg-gradient-to-br from-violet to-cyan text-bg border-transparent scale-110"
+                        : "bg-panel2 text-ink-soft border-border group-hover:border-violet/50"
+                    }`}
                   >
-                    <span
-                      className={`w-11 h-11 rounded-full flex items-center justify-center font-display text-sm font-semibold border-2 transition-all ${
-                        openStep === i
-                          ? "bg-gradient-to-br from-violet to-cyan text-bg border-transparent scale-110"
-                          : "bg-panel2 text-ink-soft border-border group-hover:border-violet/50"
-                      }`}
-                    >
-                      {i + 1}
-                    </span>
-                    <p
-                      className={`text-[11px] font-mono text-center mt-2 leading-snug ${
-                        openStep === i
-                          ? "text-ink font-semibold"
-                          : "text-ink-faint"
-                      }`}
-                    >
-                      {step.title}
-                    </p>
-                    <span className="text-[10px] text-ink-faint mt-1">
-                      {step.estimatedWeeks}w
-                    </span>
-                  </button>
-                  {i < learningPath.steps.length - 1 && (
-                    <div className="w-10 h-[2px] mt-[22px] border-t-2 border-dashed border-border shrink-0" />
-                  )}
-                </div>
-              ))}
-            </div>
+                    {i + 1}
+                  </span>
+
+                  <p
+                    className={`text-[10px] sm:text-[11px] font-mono text-center mt-2 leading-snug break-words ${
+                      openStep === i
+                        ? "text-ink font-semibold"
+                        : "text-ink-faint"
+                    }`}
+                  >
+                    {step.title}
+                  </p>
+
+                  <span className="text-[10px] text-ink-faint mt-1">
+                    {step.estimatedWeeks}w
+                  </span>
+                </button>
+
+                {i < learningPath.steps.length - 1 && (
+                  <div className="hidden sm:block w-10 h-[2px] mt-[22px] border-t-2 border-dashed border-border shrink-0" />
+                )}
+              </div>
+            ))}
           </div>
+
           {learningPath.steps[openStep] && (
             <div className="card p-5 mb-8">
               {(() => {
@@ -150,37 +150,44 @@ export default function ImprovementPlanner() {
                 const links = buildResourceLinks(
                   step.resourceKeyword || step.title,
                 );
+
                 return (
                   <>
-                    <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                       <div>
                         <p className="label-eyebrow mb-1">
                           Milestone {openStep + 1} of{" "}
                           {learningPath.steps.length}
                         </p>
+
                         <h3 className="font-display text-lg font-semibold">
                           {step.title}
                         </h3>
                       </div>
+
                       <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-violet-soft text-violet shrink-0">
                         ~{step.estimatedWeeks} weeks
                       </span>
                     </div>
+
                     <p className="text-sm text-ink-soft leading-relaxed mb-4">
                       {step.description}
                     </p>
+
                     {step.projectIdea && (
                       <div className="flex items-start gap-2 mb-4 p-3 rounded-card bg-panel">
                         <Lightbulb
                           size={14}
                           className="text-flag shrink-0 mt-0.5"
                         />
+
                         <p className="text-xs text-ink-soft">
                           <span className="text-ink-faint">Project idea:</span>{" "}
                           {step.projectIdea}
                         </p>
                       </div>
                     )}
+
                     <div className="flex flex-wrap gap-2">
                       {links.map((link) => (
                         <a
@@ -194,6 +201,7 @@ export default function ImprovementPlanner() {
                         </a>
                       ))}
                     </div>
+
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                       <button
                         disabled={openStep === 0}
@@ -202,6 +210,7 @@ export default function ImprovementPlanner() {
                       >
                         <ChevronDown size={13} className="rotate-90" /> Previous
                       </button>
+
                       <button
                         disabled={openStep === learningPath.steps.length - 1}
                         onClick={() => setOpenStep((s) => s + 1)}

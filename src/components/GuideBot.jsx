@@ -126,20 +126,20 @@ export default function GuideBot() {
   const isFreshConversation = messages.length <= 1;
   return (
     <>
-      <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2">
+      <div className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-50 flex items-center gap-2">
         {!open && (
-          <span className="bg-panel2 border border-border text-ink text-xs font-mono px-3 py-2 rounded-card shadow-lg whitespace-nowrap">
+          <span className="hidden sm:inline-block bg-panel2 border border-border text-ink text-xs font-mono px-3 py-2 rounded-card shadow-lg whitespace-nowrap">
             Ask DreamEagle 🦅
           </span>
         )}
         <button
           onClick={handleOpen}
           className="rounded-full bg-gradient-to-br from-violet to-cyan
-                     shadow-lg flex items-center justify-center text-bg hover:scale-105 transition-transform relative"
-          style={{ width: 52, height: 52 }}
+                     shadow-lg flex items-center justify-center text-bg hover:scale-105 transition-transform relative shrink-0"
+          style={{ width: 46, height: 46 }}
           aria-label="Open DreamEagle assistant"
         >
-          {open ? <X size={22} /> : <MessageCircle size={22} />}
+          {open ? <X size={20} /> : <MessageCircle size={20} />}
           {guideNotification?.unread && !open && (
             <span className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-flag border-2 border-bg" />
           )}
@@ -148,7 +148,7 @@ export default function GuideBot() {
       {open && (
         <div
           ref={panelRef}
-          className="fixed bottom-24 right-5 z-50 w-[340px] max-h-[480px] flex flex-col card shadow-2xl overflow-hidden"
+          className="fixed bottom-20 right-4 left-4 sm:left-auto sm:right-5 sm:bottom-24 z-50 sm:w-[340px] max-h-[70vh] sm:max-h-[480px] flex flex-col card shadow-2xl overflow-hidden"
         >
           <div className="px-4 py-3 border-b border-border flex items-center gap-2 bg-violet-soft">
             <Sparkles size={16} className="text-violet" />
@@ -197,13 +197,20 @@ export default function GuideBot() {
           </div>
           <form
             onSubmit={handleSend}
-            className="p-3 border-t border-border flex gap-2"
+            className="p-3 border-t border-border flex gap-2 items-end"
           >
-            <input
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage(input);
+                }
+              }}
               placeholder="Ask me anything..."
-              className="flex-1 px-3 py-2 rounded-card border border-border bg-panel text-ink text-xs font-mono focus:outline-none focus:ring-1 focus:ring-violet"
+              rows={1}
+              className="flex-1 px-3 py-2 rounded-card border border-border bg-panel text-ink text-xs font-mono resize-none max-h-24 overflow-y-auto focus:outline-none focus:ring-1 focus:ring-violet"
             />
             <button
               type="submit"
